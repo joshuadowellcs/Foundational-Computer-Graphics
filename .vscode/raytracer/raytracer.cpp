@@ -1,4 +1,4 @@
-# Basic raytracer from tutorial as a learning example
+// Basic raytracer from tutorial as a learning example
 
 #include <cstdlib>
 #include <cstdio>
@@ -24,7 +24,7 @@ class Vec3
     Vec3() : x(T(0)), y(T(0)), z(T(0)) {}
     Vec3(T xx) : x(xx), y(xx), z(xx) {}
     Vec3(T xx, T yy, T zz) : x(xx), y(yy), z(zz) {}
-    Vec3 &normalize()
+    Vec3& normalize()
     {
         T nor2 = length2();
         if (nor2 > 0) {
@@ -76,10 +76,10 @@ class Sphere{
 
         bool intersect(const Vec3f &rayorig, const Vec3f &raydir, float &t0, float &t1) const
         {
-            Vec3f 1 = center - rayorig;
-            float tca = 1.dot(raydir);
+            Vec3f l = center - rayorig;
+            float tca = l.dot(raydir);
             if (tca < 0) return false;
-            float d2 = 1.dot(1)  - tca * tca;
+            float d2 = l.dot(l)  - tca * tca;
             if (d2 > radius2) return false;
             float thc = sqrt(radius - d2);
             t0 = tca - thc;
@@ -118,7 +118,7 @@ Vec3f trace(
 {
     // if (raydir.length() != 1) std::cer << "Error " << raydir <<std::endl;
     float tnear = INFINITY;
-    const SPhere* sphere = NULL;
+    const Sphere* sphere = NULL;
     // find intersection of this ray with the sphere in the scene
     for (unsigned i = 0; i < spheres.size(); i++){
         float t0 = INFINITY, t1 = INFINITY;
@@ -146,7 +146,7 @@ Vec3f trace(
     if ((sphere->transparency > 0 || sphere->reflection > 0) && depth < MAX_RAY_DEPTH){
         float facingration = -raydir.dot(nhit);
         //change the mix value to tweak the effect
-        float fresneleffect = mix(pow(1 - facingration, 3) 1, 0.1);
+        float fresneleffect = mix(pow(1 - facingration, 3), 1, 0.1);
         // compute reflection direction ( not need to normalize because all vectors
         // are already normalized)
         Vec3f refldir = raydir - nhit * 2 * raydir.dot(nhit);
@@ -176,7 +176,7 @@ Vec3f trace(
                 // this is a light
                 Vec3f transmission = 1;
                 Vec3f lightDirection = spheres[i].center - phit;
-                lightDirecton.normalize();
+                lightDirection.normalize();
                 for (unsigned j = 0; j < spheres.size(); ++j){
                     if (i != j){
                         float t0, t1;
@@ -205,7 +205,7 @@ void render(const std::vector<Sphere> &spheres)
 {
     unsigned width = 640, height = 480;
     Vec3f *image = new Vec3f[width * height], *pixel = image;
-    float invWidth = 1 / float(width, invHeight = 1 / float(height));
+    float invWidth = 1 / float(width), invHeight = 1 / float(height);
     float fov = 30, aspectratio = width / float(height);
     float angle = tan(M_PI * 0.5 * fov / 180.);
     // Trace rays
@@ -223,7 +223,7 @@ void render(const std::vector<Sphere> &spheres)
     ofs << "P6\n" << width << " " << height << "\n255\n";
     for (unsigned i = 0; i < width * height; ++i){
         ofs << (unsigned char)(std::min(float(1), image[i].x) * 255) <<
-               (unsigned char)(std::min(float(1), imahe[i].y) * 255) <<
+               (unsigned char)(std::min(float(1), image[i].y) * 255) <<
                (unsigned char)(std::min(float(1), image[i].z) * 255);
     }
     ofs.close();
@@ -242,12 +242,12 @@ int main(int argc, char **argv)
     std::vector<Sphere> spheres;
     // position, radius, surface color, reflectivity, transparency, emission color
     spheres.push_back(Sphere(Vec3f( 0.0, -10004, -20), 10000, Vec3f(0.20, 0.20, 0.20), 0, 0.0));
-    spheres.push_back(Sphere(Vec3f( 0.0,      0, -20)      4, Vec3f(1.00, 0.32, 0.36), 1, 0.5));
+    spheres.push_back(Sphere(Vec3f( 0.0,      0, -20),     4, Vec3f(1.00, 0.32, 0.36), 1, 0.5));
     spheres.push_back(Sphere(Vec3f( 5.0,     -1, -15),     2, Vec3f(0.90, 0.76, 0.46), 1, 0.0));
     spheres.push_back(Sphere(Vec3f( 5.0,      0, -25),     3, Vec3f(0.65, 0.77, 0.97), 1, 0.0));
     spheres.push_back(Sphere(Vec3f(-5.5,      0, -15),     3, Vec3f(0.90, 0.90, 0.90), 1, 0.0));
     // light
-    spheres.push_back(Sphere(Vec3f( 0.0,     20, -30)      3, Vec3f(0.00, 0.00, 0.00), 0, 0.0, Vec3f(3)));
+    spheres.push_back(Sphere(Vec3f( 0.0,     20, -30),     3, Vec3f(0.00, 0.00, 0.00), 0, 0.0, Vec3f(3)));
     render(spheres);
     
     return 0;
